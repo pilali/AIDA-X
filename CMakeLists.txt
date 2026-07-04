@@ -1,4 +1,16 @@
 cmake_minimum_required(VERSION 3.15)
+
+# macOS: default to a 10.15 deployment target and a universal (arm64 + x86_64)
+# build. These must be set before project(); they are ignored on non-Apple
+# platforms, and any value passed on the command line (e.g. by the CI, or by a
+# developer wanting a single-arch build) takes precedence.
+if(NOT DEFINED CMAKE_OSX_DEPLOYMENT_TARGET)
+  set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15" CACHE STRING "Minimum macOS deployment version")
+endif()
+if(NOT DEFINED CMAKE_OSX_ARCHITECTURES)
+  set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "macOS build architectures")
+endif()
+
 project(AIDA-X VERSION 1.1.0)
 
 set(CMAKE_POLICY_DEFAULT_CMP0063 NEW)
