@@ -5,9 +5,13 @@ on: [push, pull_request, workflow_dispatch]
 jobs:
   linux:
     strategy:
+      fail-fast: false
       matrix:
         target: [linux-arm64, linux-armhf, linux-riscv64, linux-x86_64]
     runs-on: ubuntu-22.04
+    # riscv64 cross packages currently have unmet deps on ubuntu-22.04; keep the
+    # target visible but non-blocking until a working image/toolchain exists.
+    continue-on-error: ${{ matrix.target == 'linux-riscv64' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -18,6 +22,7 @@ jobs:
           lto: true
           pawpaw: true
           target: ${{ matrix.target }}
+          extraargs: -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
   macos:
     env:
@@ -36,6 +41,7 @@ jobs:
           lto: true
           pawpaw: true
           target: ${{ matrix.target }}
+          extraargs: -DCMAKE_POLICY_VERSION_MINIMUM=3.5
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ github.event.repository.name }}-macOS-universal
@@ -68,6 +74,7 @@ jobs:
           dpf_path: ./modules/dpf
           pawpaw: true
           target: ${{ matrix.target }}
+          extraargs: -DCMAKE_POLICY_VERSION_MINIMUM=3.5
       - uses: actions/upload-artifact@v4
         with:
           name: ${{ env.ARTIFACT_BASENAME }}-installer
@@ -166,6 +173,7 @@ jobs:
         with:
           dpf_path: ./modules/dpf
           target: pluginval
+          extraargs: -DCMAKE_POLICY_VERSION_MINIMUM=3.5
 
   source:
     runs-on: ubuntu-22.04
@@ -177,3 +185,4 @@ jobs:
         with:
           dpf_path: ./modules/dpf
           target: source
+          extraargs: -DCMAKE_POLICY_VERSION_MINIMUM=3.5
