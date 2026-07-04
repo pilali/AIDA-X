@@ -280,6 +280,7 @@ class AidaDSPLoaderPlugin : public Plugin
     TwoStageThreadedConvolver* cabsim = nullptr;
     std::atomic<bool> activeModel { false };
     std::atomic<bool> activeConvolver { false };
+    String modelFilename;
     String cabsimFilename;
     ExponentialValueSmoother cabsimGain;
     float* cabsimInplaceBuffer = nullptr;
@@ -581,6 +582,21 @@ protected:
         }
     }
 
+   /**
+      Get the current value of an internal state.
+      Called by the host when saving a project/preset, so the currently loaded
+      neural model and cabinet IR can be recalled later.
+    */
+    String getState(const char* const key) const override
+    {
+        if (std::strcmp(key, "json") == 0)
+            return modelFilename.isNotEmpty() ? modelFilename : String("default");
+        if (std::strcmp(key, "cabinet") == 0)
+            return cabsimFilename.isNotEmpty() ? cabsimFilename : String("default");
+
+        return String();
+    }
+
     void setState(const char* const key, const char* const value) override
     {
         if (std::strcmp(key, "reset-meters") == 0)
@@ -612,6 +628,7 @@ protected:
             std::istrstream jsonStream(static_cast<const char*>(static_cast<const void*>(tw40_california_clean_deerinkstudiosData)),
                                        tw40_california_clean_deerinkstudiosDataSize);
             loadModelFromStream(jsonStream);
+            modelFilename.clear();
         }
         catch (const std::exception& e) {
             d_stderr2("Unable to load json, error: %s", e.what());
@@ -623,6 +640,7 @@ protected:
         try {
             std::ifstream jsonStream(filename, std::ifstream::binary);
             loadModelFromStream(jsonStream);
+            modelFilename = filename;
         }
         catch (const std::exception& e) {
             d_stderr2("Unable to load json file: %s\nError: %s", filename, e.what());
@@ -744,6 +762,9 @@ protected:
         DISTRHO_SAFE_ASSERT_RETURN(channels == 1,);
 
         loadCabinet(channels, sampleRate, numFrames, ir);
+
+        // no longer tracking a user file, so a later sample rate change reloads the default
+        cabsimFilename.clear();
     }
 
     void loadCabinetFromFile(const char* const filename)

@@ -21,6 +21,7 @@ static constexpr const uint32_t kVersionNumber = d_version(1, 1, 0);
 #define DISTRHO_PLUGIN_IS_RT_SAFE      1
 #define DISTRHO_PLUGIN_WANT_PROGRAMS   0
 #define DISTRHO_PLUGIN_WANT_STATE      1
+#define DISTRHO_PLUGIN_WANT_FULL_STATE 1
 #define DISTRHO_UI_FILE_BROWSER        1
 #define DISTRHO_UI_USE_NANOVG          1
 
